@@ -1,64 +1,23 @@
 import React, { useState, useEffect } from "react";
+import coconutImg from "./assets/products/coconut.jpg";
+import sunflowerImg from "./assets/products/sunflower.jpg";
+import sesameImg from "./assets/products/sesame.jpg";
+import groundnutImg from "./assets/products/groundnut.jpg";
+import mustardImg from "./assets/products/mustard.jpg";
+import nigerImg from "./assets/products/niger.jpg";
+import kuridiImg from "./assets/products/kuridi.jpg";
 
 export default function ShopPage() {
   const products = [
-    {
-      id: "coconut",
-      name: "Cold-Pressed Coconut Oil",
-      short: "Virgin cold-pressed coconut oil",
-      price: 250,
-      stock: true,
-      image: "/src/assets/products/coconut.jpg",
-    },
-    {
-      id: "sunflower",
-      name: "Cold-Pressed Sunflower Oil",
-      short: "Light cooking oil",
-      price: 220,
-      stock: false,
-      image: "/src/assets/products/sunflower.jpg",
-    },
-    {
-      id: "nuvvulu",
-      name: "Cold-Pressed Sesame (Nuvvulu) Oil",
-      short: "Aromatic sesame oil",
-      price: 300,
-      stock: false,
-      image: "/src/assets/products/sesame.jpg",
-    },
-    {
-      id: "pallilu",
-      name: "Cold-Pressed Groundnut (Pallilu) Oil",
-      short: "Nutty groundnut oil",
-      price: 240,
-      stock: false,
-      image: "/src/assets/products/groundnut.jpg",
-    },
-    {
-      id: "avalu",
-      name: "Cold-Pressed Mustard (Avalu) Oil",
-      short: "Mustard oil with rich aroma",
-      price: 280,
-      stock: false,
-      image: "/src/assets/products/mustard.jpg",
-    },
-    {
-      id: "verrinuvvulu",
-      name: "Cold-Pressed Niger (Verri Nuvvulu) Oil",
-      short: "Pure niger seed oil",
-      price: 220,
-      stock: false,
-      image: "/src/assets/products/niger.jpg",
-    },
-    {
-      id: "kuridi",
-      name: "Cold-Pressed Whole Dried (Kuridi) Coconut Oil",
-      short: "Made from dried coconuts",
-      price: 280,
-      stock: false,
-      image: "/src/assets/products/kuridi.jpg",
-    },
+    { id: "coconut", name: "Cold-Pressed Coconut Oil", short: "Virgin cold-pressed coconut oil", price: 250, stock: true, img: coconutImg },
+    { id: "sunflower", name: "Cold-Pressed Sunflower Oil", short: "Light cooking oil", price: 220, stock: false, img: sunflowerImg },
+    { id: "nuvvulu", name: "Cold-Pressed Sesame (Nuvvulu) Oil", short: "Aromatic sesame oil", price: 300, stock: false, img: sesameImg },
+    { id: "pallilu", name: "Cold-Pressed Groundnut (Pallilu) Oil", short: "Nutty groundnut oil", price: 240, stock: false, img: groundnutImg },
+    { id: "avalu", name: "Cold-Pressed Mustard (Avalu) Oil", short: "Mustard oil", price: 280, stock: false, img: mustardImg },
+    { id: "Verri nuvvulu", name: "Cold-Pressed Niger (Verri Nuvvulu) Oil", short: "Niger oil", price: 220, stock: false, img: nigerImg },
+    { id: "kuridi", name: "Cold-Pressed Whole Dried (Kuridi) Coconut Oil", short: "Whole-Dried Coconut oil", price: 280, stock: false, img: kuridiImg },
   ];
+
 
   const qtyOptions = [
     { label: "250ml", multiplier: 1 },
@@ -153,11 +112,11 @@ export default function ShopPage() {
             >
               {/* Product Image */}
               <img
-                src={p.image}
+                src={p.img}
                 alt={p.name}
-                className="w-full h-48 object-cover rounded-xl mb-4"
-                onError={(e) => (e.target.style.display = "none")} // hide broken images
+                className="rounded-xl mb-4 h-48 w-full object-cover transition-transform duration-300 hover:scale-105"
               />
+
 
               {/* Product Info */}
               <h2 className="text-lg font-semibold text-gray-800">{p.name}</h2>
@@ -199,11 +158,10 @@ export default function ShopPage() {
 
               <button
                 disabled={!p.stock}
-                className={`py-2 mt-4 rounded w-full transition ${
-                  p.stock
+                className={`py-2 mt-4 rounded w-full transition ${p.stock
                     ? "bg-green-600 hover:bg-green-700 text-white"
                     : "bg-gray-200 text-gray-500 cursor-not-allowed"
-                }`}
+                  }`}
                 onClick={() => p.stock && handleAdd(p)}
               >
                 {p.stock ? "Add to Cart" : "Out of Stock"}
