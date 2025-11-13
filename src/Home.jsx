@@ -1,0 +1,146 @@
+// src/Home.jsx
+import React from "react";
+import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
+
+export default function Home() {
+  return (
+    <div className="font-sans text-gray-800 overflow-hidden">
+      {/* HERO SECTION */}
+      <section
+        className="relative h-[90vh] flex items-center justify-center text-center bg-cover bg-center"
+        style={{
+          backgroundImage:
+            "url('https://images.unsplash.com/photo-1615486360433-4f3cdb2f2e91?auto=format&fit=crop&w=1500&q=80')",
+        }}
+      >
+        <div className="absolute inset-0 bg-black bg-opacity-50"></div>
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1 }}
+          className="relative z-10 max-w-3xl text-white px-4"
+        >
+          <h1 className="text-5xl md:text-6xl font-bold mb-4 leading-tight">
+            Pure Oils, Pure Health
+          </h1>
+          <p className="text-lg md:text-xl mb-8 text-gray-100">
+            Cold-pressed. Chemical-free. Crafted with care at Siddhi Organics.
+          </p>
+          <Link
+            to="/shop"
+            className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg text-lg font-semibold transition"
+          >
+            Shop Now
+          </Link>
+        </motion.div>
+      </section>
+
+      {/* ABOUT / BRAND STORY */}
+      <section className="py-20 px-6 md:px-20 bg-white text-center">
+        <motion.h2
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="text-3xl md:text-4xl font-bold mb-6 text-green-700"
+        >
+          The Siddhi Promise 🌿
+        </motion.h2>
+
+        <motion.p
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          transition={{ duration: 1 }}
+          className="max-w-3xl mx-auto text-gray-600 text-lg leading-relaxed"
+        >
+          Every bottle of Siddhi Organics oil is slow-crafted using traditional
+          <span className="font-semibold text-green-700"> wooden cold-press</span> methods,
+          retaining natural nutrients and flavor. From responsibly sourced seeds
+          to sustainable packaging — we bring purity, straight from nature.
+        </motion.p>
+
+        <motion.img
+          src="https://images.unsplash.com/photo-1585238342028-2f9a5b17c9b1?auto=format&fit=crop&w=1200&q=80"
+          alt="Cold Press Process"
+          className="rounded-2xl shadow-lg mt-12 mx-auto w-full md:w-3/4 object-cover"
+          initial={{ opacity: 0, scale: 0.95 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 1 }}
+        />
+      </section>
+
+      {/* BESTSELLERS */}
+      <section className="py-20 px-6 md:px-20 bg-gray-50">
+        <h2 className="text-3xl md:text-4xl font-bold text-center mb-10 text-green-700">
+          Our Bestsellers
+        </h2>
+
+        <div className="grid md:grid-cols-3 gap-10 max-w-6xl mx-auto">
+          {[
+            {
+              name: "Cold-Pressed Coconut Oil",
+              img: "/src/assets/products/coconut.jpg",
+            },
+            {
+              name: "Cold-Pressed Sunflower Oil",
+              img: "/src/assets/products/sunflower.jpg",
+            },
+            {
+              name: "Cold-Pressed Groundnut Oil",
+              img: "/src/assets/products/groundnut.jpg",
+            },
+          ].map((p, i) => (
+            <motion.div
+              key={i}
+              whileHover={{ scale: 1.05 }}
+              transition={{ type: "spring", stiffness: 200 }}
+              className="bg-white rounded-2xl shadow-md hover:shadow-xl overflow-hidden"
+            >
+              <img src={p.img} alt={p.name} className="w-full h-64 object-cover" />
+              <div className="p-6 text-center">
+                <h3 className="text-xl font-semibold mb-3">{p.name}</h3>
+                <Link
+                  to="/shop"
+                  className="text-green-700 hover:text-green-800 font-medium"
+                >
+                  View Product →
+                </Link>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </section>
+
+      {/* CTA */}
+      <motion.section
+        className="py-20 bg-green-700 text-white text-center relative overflow-hidden"
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        transition={{ duration: 1 }}
+      >
+        <img
+          src="https://images.unsplash.com/photo-1576186726115-4f8d4b0a63b1?auto=format&fit=crop&w=1500&q=80"
+          alt="Oil background"
+          className="absolute inset-0 w-full h-full object-cover opacity-20"
+        />
+        <div className="relative z-10">
+          <h2 className="text-4xl font-bold mb-4">Start Your Healthy Journey</h2>
+          <p className="text-lg mb-8">
+            Switch to pure, wooden cold-pressed oils from Siddhi Organics today.
+          </p>
+          <Link
+            to="/shop"
+            className="bg-white text-green-700 px-8 py-3 rounded-lg text-lg font-semibold hover:bg-green-100 transition"
+          >
+            Shop Now
+          </Link>
+        </div>
+      </motion.section>
+
+      {/* FOOTER */}
+      <footer className="py-10 bg-gray-900 text-center text-gray-400 text-sm">
+        <p>© {new Date().getFullYear()} Siddhi Organics. All rights reserved.</p>
+      </footer>
+    </div>
+  );
+}
