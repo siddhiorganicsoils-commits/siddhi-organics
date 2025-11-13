@@ -3,6 +3,14 @@ import React from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 
+// ✅ Import local images
+import heroBanner from "./assets/products/coconut.jpg";
+import processImg from "./assets/products/processimage.jpg";
+import coconutImg from "./assets/products/coconut.jpg";
+import sunflowerImg from "./assets/products/sunflower.jpg";
+import groundnutImg from "./assets/products/groundnut.jpg";
+import bgOil from "./assets/products/kuridi.jpg";
+
 export default function Home() {
   return (
     <div className="font-sans text-gray-800 overflow-hidden">
@@ -10,8 +18,7 @@ export default function Home() {
       <section
         className="relative h-[90vh] flex items-center justify-center text-center bg-cover bg-center"
         style={{
-          backgroundImage:
-            "url('https://images.unsplash.com/photo-1615486360433-4f3cdb2f2e91?auto=format&fit=crop&w=1500&q=80')",
+          backgroundImage: `url(${heroBanner})`,
         }}
       >
         <div className="absolute inset-0 bg-black bg-opacity-50"></div>
@@ -54,13 +61,17 @@ export default function Home() {
           className="max-w-3xl mx-auto text-gray-600 text-lg leading-relaxed"
         >
           Every bottle of Siddhi Organics oil is slow-crafted using traditional
-          <span className="font-semibold text-green-700"> wooden cold-press</span> methods,
-          retaining natural nutrients and flavor. From responsibly sourced seeds
-          to sustainable packaging — we bring purity, straight from nature.
+          <span className="font-semibold text-green-700">
+            {" "}
+            wooden cold-press
+          </span>{" "}
+          methods, retaining natural nutrients and flavor. From responsibly
+          sourced seeds to sustainable packaging — we bring purity, straight
+          from nature.
         </motion.p>
 
         <motion.img
-          src="https://images.unsplash.com/photo-1585238342028-2f9a5b17c9b1?auto=format&fit=crop&w=1200&q=80"
+          src={processImg}
           alt="Cold Press Process"
           className="rounded-2xl shadow-lg mt-12 mx-auto w-full md:w-3/4 object-cover"
           initial={{ opacity: 0, scale: 0.95 }}
@@ -77,18 +88,9 @@ export default function Home() {
 
         <div className="grid md:grid-cols-3 gap-10 max-w-6xl mx-auto">
           {[
-            {
-              name: "Cold-Pressed Coconut Oil",
-              img: "/src/assets/products/coconut.jpg",
-            },
-            {
-              name: "Cold-Pressed Sunflower Oil",
-              img: "/src/assets/products/sunflower.jpg",
-            },
-            {
-              name: "Cold-Pressed Groundnut Oil",
-              img: "/src/assets/products/groundnut.jpg",
-            },
+            { name: "Cold-Pressed Coconut Oil", img: coconutImg },
+            { name: "Cold-Pressed Sunflower Oil", img: sunflowerImg },
+            { name: "Cold-Pressed Groundnut Oil", img: groundnutImg },
           ].map((p, i) => (
             <motion.div
               key={i}
@@ -96,7 +98,11 @@ export default function Home() {
               transition={{ type: "spring", stiffness: 200 }}
               className="bg-white rounded-2xl shadow-md hover:shadow-xl overflow-hidden"
             >
-              <img src={p.img} alt={p.name} className="w-full h-64 object-cover" />
+              <img
+                src={p.img}
+                alt={p.name}
+                className="w-full h-64 object-cover"
+              />
               <div className="p-6 text-center">
                 <h3 className="text-xl font-semibold mb-3">{p.name}</h3>
                 <Link
@@ -119,7 +125,7 @@ export default function Home() {
         transition={{ duration: 1 }}
       >
         <img
-          src="https://images.unsplash.com/photo-1576186726115-4f8d4b0a63b1?auto=format&fit=crop&w=1500&q=80"
+          src={bgOil}
           alt="Oil background"
           className="absolute inset-0 w-full h-full object-cover opacity-20"
         />
