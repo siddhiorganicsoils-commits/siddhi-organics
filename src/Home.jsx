@@ -1,27 +1,38 @@
 // src/Home.jsx
-import React from "react";
+import React, { useEffect } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
+import Footer from "./components/Footer";
 
-// ✅ Import local images
-import heroBanner from "./assets/products/coconut.jpg";
-import processImg from "./assets/products/processimage.jpg";
-import coconutImg from "./assets/products/coconut.jpg";
-import sunflowerImg from "./assets/products/sunflower.jpg";
-import groundnutImg from "./assets/products/groundnut.jpg";
-import bgOil from "./assets/products/kuridi.jpg";
+const imgBase =
+  "https://oryuihfxwdlyyhmpfedh.supabase.co/storage/v1/object/public/assets/products/";
+
+// DB style names
+const heroBanner = imgBase + "coconut.jpg";
+const processImg = imgBase + "processimage.jpg";
+const coconutImg = imgBase + "coconut.jpg";
+const sunflowerImg = imgBase + "sunflower.jpg";
+const groundnutImg = imgBase + "groundnut.jpg";
+const bgOil = imgBase + "kuridi.jpg";
+const heroimage = imgBase + "heroimage.png"
+const sesameImg = imgBase + "sesame.jpg"
 
 export default function Home() {
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  })
   return (
     <div className="font-sans text-gray-800 overflow-hidden">
+      
       {/* HERO SECTION */}
       <section
         className="relative h-[90vh] flex items-center justify-center text-center bg-cover bg-center"
         style={{
-          backgroundImage: `url(${heroBanner})`,
+          backgroundImage: `url(${heroimage})`,
         }}
       >
-        <div className="absolute inset-0 bg-black bg-opacity-50"></div>
+        {/* <div className="absolute inset-0 bg-black bg-opacity-50"></div> */}
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
@@ -43,7 +54,7 @@ export default function Home() {
         </motion.div>
       </section>
 
-      {/* ABOUT / BRAND STORY */}
+      {/* ABOUT SECTION */}
       <section className="py-20 px-6 md:px-20 bg-white text-center">
         <motion.h2
           initial={{ opacity: 0, y: 40 }}
@@ -61,10 +72,7 @@ export default function Home() {
           className="max-w-3xl mx-auto text-gray-600 text-lg leading-relaxed"
         >
           Every bottle of Siddhi Organics oil is slow-crafted using traditional
-          <span className="font-semibold text-green-700">
-            {" "}
-            wooden cold-press
-          </span>{" "}
+          <span className="font-semibold text-green-700"> wooden cold-press </span>
           methods, retaining natural nutrients and flavor. From responsibly
           sourced seeds to sustainable packaging — we bring purity, straight
           from nature.
@@ -88,9 +96,9 @@ export default function Home() {
 
         <div className="grid md:grid-cols-3 gap-10 max-w-6xl mx-auto">
           {[
-            { name: "Cold-Pressed Coconut Oil", img: coconutImg },
-            { name: "Cold-Pressed Sunflower Oil", img: sunflowerImg },
             { name: "Cold-Pressed Groundnut Oil", img: groundnutImg },
+            { name: "Cold-Pressed Sesame Oil", img: sesameImg },
+            { name: "Cold-Pressed Coconut Oil", img: coconutImg },
           ].map((p, i) => (
             <motion.div
               key={i}
@@ -144,9 +152,7 @@ export default function Home() {
       </motion.section>
 
       {/* FOOTER */}
-      <footer className="py-10 bg-gray-900 text-center text-gray-400 text-sm">
-        <p>© {new Date().getFullYear()} Siddhi Organics. All rights reserved.</p>
-      </footer>
+      <Footer />
     </div>
   );
 }
