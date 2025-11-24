@@ -24,7 +24,7 @@ export default function Home() {
   })
   return (
     <div className="font-sans text-gray-800 overflow-hidden">
-      
+
       {/* HERO SECTION */}
       <section
         className="relative h-[90vh] flex items-center justify-center text-center bg-cover bg-center"
@@ -32,7 +32,17 @@ export default function Home() {
           backgroundImage: `url(${heroimage})`,
         }}
       >
-        {/* <div className="absolute inset-0 bg-black bg-opacity-50"></div> */}
+        {/* TOP-LEFT BUTTON */}
+        <div className="absolute top-6 left-6 z-50">
+          <Link
+            to="/shop"
+            className="text-white text-lg underline underline-offset-4 hover:text-gray-200 transition"
+          >
+            View Products
+          </Link>
+        </div>
+
+        {/* HERO TEXT */}
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
@@ -53,6 +63,7 @@ export default function Home() {
           </Link>
         </motion.div>
       </section>
+
 
       {/* ABOUT SECTION */}
       <section className="py-20 px-6 md:px-20 bg-white text-center">
@@ -150,6 +161,44 @@ export default function Home() {
           </Link>
         </div>
       </motion.section>
+
+      {/* MAP SECTION */}
+      <section className="py-16 px-6 md:px-20 bg-white">
+        <h2 className="text-3xl md:text-4xl font-bold text-center mb-6 text-green-700">
+          Visit Us
+        </h2>
+
+        <p className="text-center text-gray-600 max-w-2xl mx-auto mb-2">
+          Plot-no 3-100/611, Shop Number 1, Jayabheri Park, Kompally,<br />
+          Medchal–Malkajgiri District, Telangana – 500014.
+        </p>
+
+        <p className="text-center mt-2">
+          <a
+            href="https://www.google.com/maps/search/?api=1&query=Plot-no%203-100/611,%20Shop%20Number%201,%20Jayabheri%20Park,%20Kompally,%20Medchal%20Malkajgiri%20District,%20Telangana%20500014"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-green-700 underline hover:text-green-900"
+          >
+            Open in Google Maps →
+          </a>
+        </p>
+
+        <div className="w-full max-w-4xl mx-auto mt-6 rounded-2xl overflow-hidden shadow-lg">
+          <iframe
+            title="Siddhi Organics Location"
+            src="https://www.google.com/maps?q=17.53891,78.48398&z=18&output=embed"
+            className="w-full h-[350px] md:h-[450px] border-none"
+            allowFullScreen=""
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+          ></iframe>
+
+        </div>
+      </section>
+
+
+
 
       {/* FOOTER */}
       <Footer />

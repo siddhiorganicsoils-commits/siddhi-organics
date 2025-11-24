@@ -27,7 +27,6 @@ export default function ShopPage() {
     const { data, error } = await supabase.from("products").select("*");
 
     if (error) {
-      console.log("❌ Product fetch error:", error);
       setProducts([]); // still render page
       return;
     }
@@ -41,7 +40,6 @@ export default function ShopPage() {
           : "", // safe fallback
       }));
     } catch (e) {
-      console.log("❌ Image mapping error:", e);
     }
 
     setProducts(withImages);
@@ -59,7 +57,6 @@ export default function ShopPage() {
     const { data, error } = await supabase.from("product_sizes").select("*");
 
     if (error) {
-      console.log("❌ Size fetch error:", error);
       return;
     }
 
@@ -210,14 +207,20 @@ export default function ShopPage() {
                 <button
                   disabled={!p.in_stock}
                   onClick={() => handleAdd(p)}
-                  className={`py-2 mt-4 rounded w-full ${
-                    p.in_stock
-                      ? "bg-green-600 text-white"
+                  className={`py-2 mt-4 rounded w-full transition-all duration-300 ${p.in_stock
+                      ? addedItem === p.id
+                        ? "bg-green-700 text-white scale-105"
+                        : "bg-green-600 text-white hover:bg-green-700"
                       : "bg-gray-300 text-gray-600"
-                  }`}
+                    }`}
                 >
-                  {p.in_stock ? "Add to Cart" : "Out of Stock"}
+                  {p.in_stock
+                    ? addedItem === p.id
+                      ? "Added ✓"
+                      : "Add to Cart"
+                    : "Out of Stock"}
                 </button>
+
               </div>
             );
           })}
