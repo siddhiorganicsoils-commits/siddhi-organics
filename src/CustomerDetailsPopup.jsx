@@ -44,7 +44,7 @@ export default function CustomerDetailsPopup({ isOpen, onClose, onSubmit }) {
     if (!form.name.trim()) newErrors.name = "Name is required";
     if (!/^[6-9]\d{9}$/.test(form.mobile))
       newErrors.mobile = "Enter valid 10-digit mobile number";
-    if (form.email && !/^[\\w.%+-]+@[\\w.-]+\\.[A-Za-z]{2,}$/.test(form.email))
+    if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(form.email))
       newErrors.email = "Enter valid email";
 
     if (!form.houseNo.trim()) newErrors.houseNo = "House number required";

@@ -175,7 +175,7 @@ export default function Home() {
 
         <p className="text-center mt-2">
           <a
-            href="https://www.google.com/maps/search/?api=1&query=Plot-no%203-100/611,%20Shop%20Number%201,%20Jayabheri%20Park,%20Kompally,%20Medchal%20Malkajgiri%20District,%20Telangana%20500014"
+            href="https://www.google.com/maps/search/?api=1&query=17.53883608847618,78.48408965278003"
             target="_blank"
             rel="noopener noreferrer"
             className="text-green-700 underline hover:text-green-900"

@@ -47,7 +47,7 @@ export default function ShopPage() {
     // Default selections
     const defaults = {};
     withImages.forEach((p) => {
-      defaults[p.id] = { size: "250ml", count: 1 };
+      defaults[p.id] = { size: "1L", count: 1 };
     });
     setSelected(defaults);
   };
@@ -152,7 +152,7 @@ export default function ShopPage() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
           {products.map((p) => {
-            const sel = selected[p.id] || { size: "250ml", count: 1 };
+            const sel = selected[p.id] || { size: "1L", count: 1 };
             const total = getTotalFor(p);
             const sizeOptions = getSizeOptions(p.id);
 
@@ -171,7 +171,7 @@ export default function ShopPage() {
                 <p className="text-gray-500 text-sm mt-1">{p.short_desc}</p>
 
                 <p className="font-medium mt-4 text-green-700">
-                  ₹{p.base_price} / 250ml
+                  ₹{p.base_price} / 1L
                 </p>
 
                 <div className="flex gap-2 mt-4">
