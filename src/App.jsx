@@ -10,6 +10,8 @@ import oildropicon from "./assets/oildropicon.png"
 import ScrollToTop from "./ScrollToTop";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsConditions from "./pages/TermsConditions";
+import ShippingManager from "./admin/ShippingManager";
+
 
 // import Toast from "./Toast.jsx";
 
@@ -45,6 +47,7 @@ export default function App() {
                 <Route path="/cart" element={<CartPage />} />
                 <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                 <Route path="/terms-and-conditions" element={<TermsConditions />} />
+                <Route path="/admin/shipping" element={<ShippingManager />} />
             </Routes>
         </div>
     );

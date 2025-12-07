@@ -205,21 +205,28 @@ export default function ShopPage() {
                 </p>
 
                 <button
-                  disabled={!p.in_stock}
-                  onClick={() => handleAdd(p)}
-                  className={`py-2 mt-4 rounded w-full transition-all duration-300 ${p.in_stock
+                  disabled={!p.in_stock && !p.coming_soon}
+                  onClick={() => p.in_stock && !p.coming_soon && handleAdd(p)}
+                  className={`py-2 mt-4 rounded w-full transition-all duration-300
+    ${p.in_stock
                       ? addedItem === p.id
                         ? "bg-green-700 text-white scale-105"
                         : "bg-green-600 text-white hover:bg-green-700"
-                      : "bg-gray-300 text-gray-600"
-                    }`}
+                      : p.coming_soon
+                        ? "bg-yellow-400 text-yellow-900"
+                        : "bg-gray-300 text-gray-600"
+                    }
+  `}
                 >
                   {p.in_stock
                     ? addedItem === p.id
                       ? "Added ✓"
                       : "Add to Cart"
-                    : "Out of Stock"}
+                    : p.coming_soon
+                      ? "Coming Soon"
+                      : "Out of Stock"}
                 </button>
+
 
               </div>
             );

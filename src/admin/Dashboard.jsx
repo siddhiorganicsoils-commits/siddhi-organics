@@ -34,7 +34,14 @@ export default function Dashboard() {
         <h1 className="text-2xl font-bold">Admin Dashboard</h1>
         <div>
           <button onClick={() => setEditing({})} className="mr-2 bg-blue-600 text-white px-3 py-1 rounded">Add product</button>
-          <button onClick={() => setRefreshKey(k => k+1)} className="mr-2 bg-gray-200 px-3 py-1 rounded">Refresh</button>
+          <button
+            onClick={() => nav("/admin/shipping")}
+            className="mr-2 bg-yellow-600 text-white px-3 py-1 rounded"
+          >
+            Shipping Manager
+          </button>
+
+          <button onClick={() => setRefreshKey(k => k + 1)} className="mr-2 bg-gray-200 px-3 py-1 rounded">Refresh</button>
           <button onClick={signOut} className="bg-red-600 text-white px-3 py-1 rounded">Sign out</button>
         </div>
       </header>
@@ -48,7 +55,7 @@ export default function Dashboard() {
           <ProductForm
             key={editing?.id || "new"}
             product={editing}
-            onDone={() => { setEditing(null); setRefreshKey(k => k+1); }}
+            onDone={() => { setEditing(null); setRefreshKey(k => k + 1); }}
           />
         </div>
       </div>

@@ -73,13 +73,14 @@ export default function ProductForm({ product, onDone }) {
       <label className="block text-sm mb-1">Short description</label>
       <input className="w-full border p-2 rounded mb-2" value={short_desc} onChange={(e) => setShortDesc(e.target.value)} />
 
-      <label className="block text-sm mb-1">Base price (₹ for 250ml)</label>
+      <label className="block text-sm mb-1">Base price (₹ for 1L)</label>
       <input type="number" className="w-full border p-2 rounded mb-2" value={base_price} onChange={(e) => setBasePrice(e.target.value)} />
 
       <label className="block text-sm mb-1">Stock</label>
       <select className="w-full border p-2 rounded mb-2" value={in_stock ? "1" : "0"} onChange={(e) => setInStock(e.target.value === "1")}>
         <option value="1">In stock</option>
         <option value="0">Out of stock</option>
+        {/* <option value="0">Coming Soon</option> */}
       </select>
 
       <label className="block text-sm mb-1">Image (optional)</label>
