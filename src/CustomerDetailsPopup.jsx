@@ -1,33 +1,28 @@
-import React, { useState, useEffect, useRef } from "react";
-import { supabase } from "./lib/supabase";
+import React, { useEffect, useRef, useState } from "react";
 
 export default function CustomerDetailsPopup({ isOpen, onClose, onSubmit }) {
+  const nameRef = useRef(null);
+
   const [form, setForm] = useState({
     name: "",
     mobile: "",
     email: "",
     houseNo: "",
     street: "",
+    pincode: "",
     city: "",
     state: "",
-    district: "",
-    pincode: "",
   });
 
   const [errors, setErrors] = useState({});
-  const [shippingCharge, setShippingCharge] = useState(null);
-  const [localities, setLocalities] = useState([]);
-  const [loadingLocation, setLoadingLocation] = useState(false);
-  const [pincodeWarning, setPincodeWarning] = useState("");
+  const [cities, setCities] = useState([]);
+  const [loadingPin, setLoadingPin] = useState(false);
+  const [pinInfo, setPinInfo] = useState("");
 
-  const nameInputRef = useRef(null);
-
-  // Autofocus name field
   useEffect(() => {
-    if (isOpen && nameInputRef.current) nameInputRef.current.focus();
+    if (isOpen && nameRef.current) nameRef.current.focus();
   }, [isOpen]);
 
-  // Reset popup on open
   useEffect(() => {
     if (isOpen) {
       setForm({
@@ -36,266 +31,181 @@ export default function CustomerDetailsPopup({ isOpen, onClose, onSubmit }) {
         email: "",
         houseNo: "",
         street: "",
+        pincode: "",
         city: "",
         state: "",
-        district: "",
-        pincode: "",
       });
       setErrors({});
-      setShippingCharge(null);
-      setLocalities([]);
-      setLoadingLocation(false);
-      setPincodeWarning("");
+      setCities([]);
+      setPinInfo("");
     }
   }, [isOpen]);
 
   if (!isOpen) return null;
 
-  // ---------------------------------------------------------
-  // VALIDATION
-  // ---------------------------------------------------------
+  // ---------------- VALIDATION ----------------
   const validate = () => {
-    const newErrors = {};
-
-    if (!form.name.trim()) newErrors.name = "Name is required";
-
+    const e = {};
+    if (!form.name.trim()) e.name = "Name is required";
     if (!/^[6-9]\d{9}$/.test(form.mobile))
-      newErrors.mobile = "Enter valid 10-digit mobile number";
-
+      e.mobile = "Enter valid 10-digit mobile number";
     if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(form.email))
-      newErrors.email = "Enter valid email";
+      e.email = "Invalid email";
+    if (!form.houseNo.trim()) e.houseNo = "House number required";
+    if (!form.street.trim()) e.street = "Street / Area required";
+    if (!/^[1-9]\d{5}$/.test(form.pincode)) e.pincode = "Invalid pincode";
+    if (!form.city.trim()) e.city = "City required";
+    if (!form.state.trim()) e.state = "State required";
 
-    if (!form.houseNo.trim()) newErrors.houseNo = "House number required";
-    if (!form.street.trim()) newErrors.street = "Street/Area required";
-
-    if (!form.city.trim()) newErrors.city = "Select locality";
-    if (!form.state.trim()) newErrors.state = "State required";
-
-    if (!/^[1-9][0-9]{5}$/.test(form.pincode))
-      newErrors.pincode = "Enter valid 6-digit pincode";
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    setErrors(e);
+    return Object.keys(e).length === 0;
   };
 
-  // ---------------------------------------------------------
-  // FETCH PINCODE DETAILS
-  // ---------------------------------------------------------
+  // ---------------- PINCODE LOOKUP ----------------
   const fetchLocation = async (pin) => {
-    setPincodeWarning("");
-    setLocalities([]);
-    setForm((prev) => ({ ...prev, city: "", state: "", district: "" }));
+    setCities([]);
+    setPinInfo("");
+    setForm((p) => ({ ...p, city: "", state: "" }));
+
+    if (!/^[1-9]\d{5}$/.test(pin)) return;
 
     try {
-      setLoadingLocation(true);
-
+      setLoadingPin(true);
       const res = await fetch(`https://api.postalpincode.in/pincode/${pin}`);
       const data = await res.json();
 
-      if (!data || data[0].Status !== "Success") {
-        setPincodeWarning("⚠️ Invalid pincode — cannot fetch location.");
+      if (data?.[0]?.Status !== "Success") {
+        setPinInfo("Location not found. Please enter manually.");
         return;
       }
 
-      const offices = data[0].PostOffice;
+      const offices = data[0].PostOffice || [];
+      const uniqueCities = [...new Set(offices.map((o) => o.Name))];
+      const state = offices[0]?.State || "";
 
-      const localityNames = offices.map((o) => o.Name);
-      const districts = [...new Set(offices.map((o) => o.District))];
-      const states = [...new Set(offices.map((o) => o.State))];
-
-      setLocalities(localityNames);
-
-      setForm((prev) => ({
-        ...prev,
-        city: localityNames[0] || "",
-        district: districts[0] || "",
-        state: states[0] || "",
+      setCities(uniqueCities);
+      setForm((p) => ({
+        ...p,
+        city: uniqueCities[0] || "",
+        state,
       }));
-    } catch (err) {
-      setPincodeWarning("⚠️ Unable to fetch location. Try again.");
+    } catch {
+      setPinInfo("Unable to fetch location. Please enter manually.");
     } finally {
-      setLoadingLocation(false);
+      setLoadingPin(false);
     }
   };
 
-  // ---------------------------------------------------------
-  // CHECK SHIPPING FROM SUPABASE
-  // ---------------------------------------------------------
-  const checkPincode = async (pin) => {
-    const { data } = await supabase
-      .from("shipping_zones")
-      .select("*")
-      .eq("pincode", pin)
-      .maybeSingle();
-
-    setShippingCharge(data ? data.charge : null);
-  };
-
-  // ---------------------------------------------------------
-  // SUBMIT
-  // ---------------------------------------------------------
   const handleSubmit = () => {
     if (!validate()) return;
-    onSubmit({ ...form, shippingCharge });
+    onSubmit(form);
     onClose();
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-      <div className="bg-white rounded-2xl shadow-lg w-full max-w-md p-6 animate-fadeIn">
-        <h2 className="text-xl font-bold mb-4 text-green-700">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div className="bg-white w-full max-w-md rounded-2xl p-6 shadow-lg">
+        <h2 className="text-xl font-bold text-green-700 mb-4">
           Enter Delivery Details
         </h2>
 
         <div className="space-y-3">
-          {/* NAME */}
           <input
-            ref={nameInputRef}
-            type="text"
+            ref={nameRef}
+            className="border rounded w-full p-2"
             placeholder="Full Name"
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
-            className="border rounded w-full p-2"
           />
           {errors.name && <p className="text-red-500 text-sm">{errors.name}</p>}
 
-          {/* MOBILE */}
           <input
-            type="tel"
+            className="border rounded w-full p-2"
             placeholder="Mobile Number"
             value={form.mobile}
-            onChange={(e) =>
-              setForm({ ...form, mobile: e.target.value.slice(0, 10) })
-            }
-            className="border rounded w-full p-2"
             maxLength={10}
+            onChange={(e) =>
+              setForm({ ...form, mobile: e.target.value.replace(/\D/g, "") })
+            }
           />
-          {errors.mobile && <p className="text-red-500 text-sm">{errors.mobile}</p>}
+          {errors.mobile && (
+            <p className="text-red-500 text-sm">{errors.mobile}</p>
+          )}
 
-          {/* EMAIL */}
           <input
-            type="email"
+            className="border rounded w-full p-2"
             placeholder="Email (optional)"
             value={form.email}
             onChange={(e) => setForm({ ...form, email: e.target.value })}
-            className="border rounded w-full p-2"
           />
-          {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
 
-          {/* HOUSE NO */}
           <input
-            type="text"
+            className="border rounded w-full p-2"
             placeholder="House / Flat No."
             value={form.houseNo}
             onChange={(e) => setForm({ ...form, houseNo: e.target.value })}
-            className="border rounded w-full p-2"
           />
-          {errors.houseNo && <p className="text-red-500 text-sm">{errors.houseNo}</p>}
 
-          {/* STREET */}
           <input
-            type="text"
+            className="border rounded w-full p-2"
             placeholder="Street / Area"
             value={form.street}
             onChange={(e) => setForm({ ...form, street: e.target.value })}
-            className="border rounded w-full p-2"
           />
-          {errors.street && <p className="text-red-500 text-sm">{errors.street}</p>}
 
-          {/* PINCODE */}
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="Pincode"
-              value={form.pincode}
-              onChange={(e) => {
-                const pin = e.target.value.replace(/\D/g, "").slice(0, 6);
-                setForm({ ...form, pincode: pin });
+          <input
+            className="border rounded w-full p-2"
+            placeholder="Pincode"
+            value={form.pincode}
+            maxLength={6}
+            onChange={(e) => {
+              const pin = e.target.value.replace(/\D/g, "");
+              setForm({ ...form, pincode: pin });
+              if (pin.length === 6) fetchLocation(pin);
+            }}
+          />
+          {errors.pincode && (
+            <p className="text-red-500 text-sm">{errors.pincode}</p>
+          )}
+          {pinInfo && <p className="text-orange-600 text-sm">{pinInfo}</p>}
 
-                if (pin.length === 6) {
-                  fetchLocation(pin);
-                  checkPincode(pin);
-                } else {
-                  setLocalities([]);
-                  setShippingCharge(null);
-                  setPincodeWarning("");
-                }
-              }}
-              className="border rounded w-full p-2 pr-10"
-              maxLength={6}
-            />
-
-            {/* CENTERED LOADER */}
-            {loadingLocation && (
-              <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                <div className="w-5 h-5 border-2 border-green-600 border-t-transparent rounded-full animate-spin"></div>
-              </div>
-            )}
-
-            {errors.pincode && (
-              <p className="text-red-500 text-sm">{errors.pincode}</p>
-            )}
-
-            {pincodeWarning && (
-              <p className="text-orange-600 text-sm">{pincodeWarning}</p>
-            )}
-
-            {shippingCharge !== null && (
-              <p className="mt-2 p-2 bg-green-50 border rounded text-sm">
-                Shipping charge: ₹{shippingCharge}
-              </p>
-            )}
-          </div>
-
-          {/* LOCALITY DROPDOWN */}
-          {localities.length > 0 && (
-            <div>
-              <select
-                value={form.city}
-                onChange={(e) =>
-                  setForm({ ...form, city: e.target.value })
-                }
-                className="border rounded w-full p-2"
-              >
-                {localities.map((l) => (
-                  <option key={l}>{l}</option>
-                ))}
-              </select>
-              {errors.city && <p className="text-red-500 text-sm">{errors.city}</p>}
-            </div>
+          {cities.length > 0 && (
+            <select
+              className="border rounded w-full p-2"
+              value={form.city}
+              onChange={(e) =>
+                setForm({ ...form, city: e.target.value })
+              }
+            >
+              {cities.map((c) => (
+                <option key={c}>{c}</option>
+              ))}
+            </select>
           )}
 
-          {/* DISTRICT + STATE */}
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-2 gap-3">
             <input
-              type="text"
-              placeholder="District"
-              value={form.district}
-              readOnly
-              className="border rounded w-full p-2 bg-gray-100"
+              className="border rounded p-2"
+              placeholder="City"
+              value={form.city}
+              onChange={(e) => setForm({ ...form, city: e.target.value })}
             />
             <input
-              type="text"
+              className="border rounded p-2"
               placeholder="State"
               value={form.state}
-              readOnly
-              className="border rounded w-full p-2 bg-gray-100"
+              onChange={(e) => setForm({ ...form, state: e.target.value })}
             />
           </div>
         </div>
 
-        {/* BUTTONS */}
         <div className="flex justify-end gap-3 mt-6">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 transition"
-          >
+          <button onClick={onClose} className="px-4 py-2 bg-gray-200 rounded">
             Cancel
           </button>
-
           <button
             onClick={handleSubmit}
-            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
+            className="px-4 py-2 bg-green-600 text-white rounded"
           >
             Continue to WhatsApp
           </button>

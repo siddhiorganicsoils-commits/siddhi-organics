@@ -15,7 +15,10 @@ export default function CartPage() {
   }, []);
 
   // total product amount
-  const totalAmount = cart.reduce((sum, item) => sum + Number(item.total || 0), 0);
+  const totalAmount = cart.reduce(
+    (sum, item) => sum + Number(item.total || 0),
+    0
+  );
 
   // convert sizes to liters
   const parseSizeToLiters = (sizeStr) => {
@@ -31,39 +34,23 @@ export default function CartPage() {
     0
   );
 
-  // --- helper: shipping by pincode
-  const fetchShippingForPincode = async (pincode) => {
-    if (!pincode) return null;
-
-    const { data: pinRow } = await supabase
+  // helper: check pincode is in 50 rs zone
+  const is50RsZone = async (pincode) => {
+    const { data } = await supabase
       .from("delivery_pincodes")
-      .select("*")
+      .select("in_50_rs_zone")
       .eq("pincode", pincode)
       .maybeSingle();
 
-    if (pinRow) {
-      if (pinRow.in_50_rs_zone) {
-        return { found: true, shipping: 50, reason: "50_zone" };
-      }
-      return { found: true, shipping: null, reason: "known_not_50" };
-    }
-
-    const { data: defRow } = await supabase
-      .from("default_shipping_rules")
-      .select("*")
-      .maybeSingle();
-
-    return {
-      found: false,
-      shipping: defRow ? Number(defRow.default_shipping) : 80,
-      reason: "fallback_default",
-    };
+    return data?.in_50_rs_zone === true;
   };
 
   // WhatsApp sender
   const sendWhatsApp = (number, msg) => {
-    const encoded = encodeURIComponent(msg);
-    window.open(`https://wa.me/${number}?text=${encoded}`, "_blank");
+    window.open(
+      `https://wa.me/${number}?text=${encodeURIComponent(msg)}`,
+      "_blank"
+    );
   };
 
   // main order handler
@@ -76,75 +63,33 @@ export default function CartPage() {
     setLoading(true);
 
     try {
-      const pincode = user.pincode.trim();
-      const shippingInfo = await fetchShippingForPincode(pincode);
+      let shippingText = "Will be added";
+      let shippingCharge = 0;
 
-      // Unknown pincode → send admin WhatsApp only
-      if (!shippingInfo.found) {
-        const adminNumber = "919858226789";
-
-        const msg = `
-New Pincode Request (Unknown Zone)
---------------------------------------
-Name: ${user.name}
-Mobile: ${user.mobile}
-Email: ${user.email || "N/A"}
-
-Address:
-${user.houseNo}, ${user.street}
-${user.city}, ${user.state} - ${pincode}
-
-Cart Liters: ${totalLiters}L
-Product Total: ₹${totalAmount}
-
-⚠️ This pincode is NOT in delivery_pincodes.
-Please call/message customer with shipping details.
---------------------------------------
-        `.trim();
-
-        sendWhatsApp(adminNumber, msg);
-        setLoading(false);
-        return;
+      // FREE SHIPPING ≥ 5L
+      if (totalLiters >= 5) {
+        shippingText = "Free";
+        shippingCharge = 0;
+      } else {
+        const in50Zone = await is50RsZone(user.pincode.trim());
+        if (in50Zone) {
+          shippingText = "₹50";
+          shippingCharge = 50;
+        }
       }
-
-      // Known pincode → apply shipping rules
-      let shippingCharge = shippingInfo.shipping;
-
-      if (shippingCharge == null) {
-        const { data: defRow } = await supabase
-          .from("default_shipping_rules")
-          .select("*")
-          .maybeSingle();
-
-        shippingCharge = defRow ? Number(defRow.default_shipping) : 80;
-      }
-
-      // free shipping
-      let freeAboveLiters = 5;
-      const { data: defaultRules } = await supabase
-        .from("default_shipping_rules")
-        .select("*")
-        .maybeSingle();
-
-      if (defaultRules?.free_shipping_above_liters) {
-        freeAboveLiters = Number(defaultRules.free_shipping_above_liters);
-      }
-
-      if (totalLiters >= freeAboveLiters) shippingCharge = 0;
 
       const grandTotal = totalAmount + shippingCharge;
 
-      // Build clean message (NO encoding here)
-      const cleanOrderList = cart
+      const orderList = cart
         .map(
           (item, i) =>
-            `${i + 1}. ${item.name} (${item.size}) × ${item.qty} = ₹${item.total}`
+            `${i + 1}. ${item.name} (${item.size}) x ${item.qty} = ₹${item.total}`
         )
         .join("\n");
 
-      const cleanMessage = `
+      const message = `
 New Order from Siddhi Organics Web
---------------------------------------
+------------------------------
 Name: ${user.name}
 Mobile: ${user.mobile}
 Email: ${user.email || "N/A"}
@@ -154,18 +99,16 @@ ${user.houseNo}, ${user.street}
 ${user.city}, ${user.state} - ${user.pincode}
 
 Order Details:
-${cleanOrderList}
+${orderList}
 
-Product Total: ₹${totalAmount}
-Shipping: ₹${shippingCharge}
-Grand Total: ₹${grandTotal}
---------------------------------------
+Total: ₹${totalAmount}
+Shipping (based on location): ${shippingText}
+Grand Total: ₹${grandTotal}${shippingText === "Will be added" ? " (+Shipping)" : ""}
+------------------------------
       `.trim();
 
-      const adminNumber = "919858226789";
-      sendWhatsApp(adminNumber, cleanMessage);
+      sendWhatsApp("919858226789", message);
 
-      // clear cart
       localStorage.removeItem("cart");
       setCart([]);
     } catch (err) {
@@ -224,7 +167,9 @@ Grand Total: ₹${grandTotal}
               Total: ₹{totalAmount.toLocaleString()}
             </p>
             <p className="text-gray-600 text-sm">
-              * Shipping will be calculated based on your pincode
+              {totalLiters >= 5
+                ? "Free shipping on orders of 5L or more"
+                : "Shipping will be calculated based on your pincode"}
             </p>
 
             <div className="flex justify-end gap-3 mt-4">
