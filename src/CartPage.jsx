@@ -67,7 +67,7 @@ export default function CartPage() {
       let shippingCharge = 0;
 
       // FREE SHIPPING ≥ 5L
-      if (totalLiters >= 5) {
+      if (totalLiters >= 3) {
         shippingText = "Free";
         shippingCharge = 0;
       } else {

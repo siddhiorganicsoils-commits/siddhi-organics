@@ -7,7 +7,7 @@ const imgBase =
   "https://oryuihfxwdlyyhmpfedh.supabase.co/storage/v1/object/public/assets/products/";
 
 export default function ShopPage() {
-  const [products, setProducts] = useState(null); // null = loading
+  const [products, setProducts] = useState(null);
   const [sizes, setSizes] = useState([]);
   const [selected, setSelected] = useState({});
   const [cartCount, setCartCount] = useState(0);
@@ -15,52 +15,58 @@ export default function ShopPage() {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    loadProducts();
     loadSizes();
-
-    const saved = JSON.parse(localStorage.getItem("cart") || "[]");
-    setCartCount(saved.length);
   }, []);
 
-  // ---------------- LOAD PRODUCTS ----------------
-  const loadProducts = async () => {
-    const { data, error } = await supabase.from("products").select("*");
+  useEffect(() => {
+    if (sizes.length > 0) loadProducts();
+    const saved = JSON.parse(localStorage.getItem("cart") || "[]");
+    setCartCount(saved.length);
+  }, [sizes]);
 
-    if (error) {
-      setProducts([]); // still render page
+  // -------- LOAD SIZES --------
+  const loadSizes = async () => {
+    const { data } = await supabase.from("product_sizes").select("*");
+    if (data) setSizes(data);
+  };
+
+  // -------- LOAD PRODUCTS --------
+  const loadProducts = async () => {
+    const { data } = await supabase
+      .from("products")
+      .select("*")
+      .order("display_order", { ascending: true });
+
+    if (!data) {
+      setProducts([]);
       return;
     }
 
-    let withImages = [];
-    try {
-      withImages = data.map((p) => ({
-        ...p,
-        img: p.image_url
-          ? imgBase + p.image_url.replace("/products/", "")
-          : "", // safe fallback
-      }));
-    } catch (e) {
-    }
+    const withImages = data.map((p) => ({
+      ...p,
+      img: p.image_url ? imgBase + p.image_url.replace("/products/", "") : "",
+    }));
 
     setProducts(withImages);
 
-    // Default selections
+    // ---- DEFAULT SELECTIONS ----
     const defaults = {};
     withImages.forEach((p) => {
-      defaults[p.id] = { size: "1L", count: 1 };
+      // Pootharekulu
+      if (p.sweet_type === "fixed") {
+        defaults[p.id] = { count: 1 };
+      }
+      // Ariselu
+      else if (p.sweet_type === "weight") {
+        defaults[p.id] = { size: "500g", count: 1 };
+      }
+      // Oils
+      else {
+        defaults[p.id] = { size: "1L", count: 1 };
+      }
     });
+
     setSelected(defaults);
-  };
-
-  // ---------------- LOAD SIZES ----------------
-  const loadSizes = async () => {
-    const { data, error } = await supabase.from("product_sizes").select("*");
-
-    if (error) {
-      return;
-    }
-
-    setSizes(data);
   };
 
   const getSizeOptions = (productId) =>
@@ -73,9 +79,15 @@ export default function ShopPage() {
     }));
   };
 
+  // -------- TOTAL --------
   const getTotalFor = (product) => {
     const sel = selected[product.id];
     if (!sel) return 0;
+
+    // Pootharekulu → fixed price per box
+    if (product.sweet_type === "fixed") {
+      return product.base_price * sel.count;
+    }
 
     const sizeRow = sizes.find(
       (s) => s.product_id === product.id && s.size_label === sel.size
@@ -83,32 +95,20 @@ export default function ShopPage() {
 
     if (!sizeRow) return 0;
 
-    return (
-      Number(product.base_price) *
-      Number(sizeRow.multiplier) *
-      Number(sel.count)
-    );
+    return product.base_price * sizeRow.multiplier * sel.count;
   };
 
   const handleAdd = (product) => {
     const sel = selected[product.id];
-    const sizeRow = sizes.find(
-      (s) => s.product_id === product.id && s.size_label === sel.size
-    );
-
-    const total =
-      Number(product.base_price) *
-      Number(sizeRow.multiplier) *
-      Number(sel.count);
+    const total = getTotalFor(product);
 
     const cart = JSON.parse(localStorage.getItem("cart") || "[]");
 
     cart.push({
       id: product.id,
       name: product.name,
-      size: sel.size,
+      size: sel.size || "box",
       qty: sel.count,
-      pricePer250: product.base_price,
       total,
       time: new Date().toISOString(),
     });
@@ -120,7 +120,6 @@ export default function ShopPage() {
     setTimeout(() => setAddedItem(null), 500);
   };
 
-  // ---------------- LOADING SCREEN ----------------
   if (products === null) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -133,11 +132,7 @@ export default function ShopPage() {
     <>
       <div className="max-w-6xl mx-auto px-4 py-10">
         <header className="flex items-center justify-between mb-10">
-          <Link
-            to="/"
-            onClick={() => window.scrollTo(0, 0)}
-            className="inline-block mb-3 text-green-700 hover:text-green-900 font-semibold"
-          >
+          <Link to="/" className="text-green-700 font-semibold">
             ← Back
           </Link>
 
@@ -145,22 +140,19 @@ export default function ShopPage() {
             Siddhi Organics — Wooden Cold-Pressed Oils
           </h1>
 
-          <div className="text-sm bg-green-100 px-3 py-1 rounded-lg">
-            🛒 Cart: {cartCount} items
+          <div className="bg-green-100 px-3 py-1 rounded">
+            🛒 Cart: {cartCount}
           </div>
         </header>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
           {products.map((p) => {
-            const sel = selected[p.id] || { size: "1L", count: 1 };
+            const sel = selected[p.id] || { count: 1 };
             const total = getTotalFor(p);
             const sizeOptions = getSizeOptions(p.id);
 
             return (
-              <div
-                key={p.id}
-                className="border rounded-2xl p-6 bg-white shadow"
-              >
+              <div key={p.id} className="border rounded-2xl p-6 bg-white shadow">
                 <img
                   src={p.img}
                   alt={p.name}
@@ -168,27 +160,43 @@ export default function ShopPage() {
                 />
 
                 <h2 className="text-lg font-semibold">{p.name}</h2>
-                <p className="text-gray-500 text-sm mt-1">{p.short_desc}</p>
+                <p className="text-sm text-gray-500 mt-1">{p.short_desc}</p>
 
-                <p className="font-medium mt-4 text-green-700">
-                  ₹{p.base_price} / 1L
+                {/* PRICE */}
+                <p className="text-green-700 font-medium mt-3">
+                  {p.sweet_type === "fixed"
+                    ? `₹${p.base_price} / box`
+                    : sizeOptions.length > 0
+                    ? `₹${(
+                        p.base_price *
+                        sizeOptions.find((s) => s.size_label === sel.size)
+                          ?.multiplier
+                      ).toLocaleString()} / ${sel.size}`
+                    : `₹${p.base_price} / 1L`}
                 </p>
 
+                {/* CONTROLS */}
                 <div className="flex gap-2 mt-4">
-                  <select
-                    className="border rounded p-2 text-sm flex-1"
-                    value={sel.size}
-                    onChange={(e) =>
-                      handleChange(p.id, "size", e.target.value)
-                    }
-                  >
-                    {sizeOptions.map((s) => (
-                      <option key={s.id}>{s.size_label}</option>
-                    ))}
-                  </select>
+                  {/* Size dropdown (NOT for pootharekulu) */}
+                  {p.sweet_type !== "fixed" && sizeOptions.length > 0 && (
+                    <select
+                      className="border rounded p-2 flex-1"
+                      value={sel.size}
+                      onChange={(e) =>
+                        handleChange(p.id, "size", e.target.value)
+                      }
+                    >
+                      {sizeOptions.map((s) => (
+                        <option key={s.id}>{s.size_label}</option>
+                      ))}
+                    </select>
+                  )}
 
+                  {/* Quantity */}
                   <select
-                    className="border rounded p-2 text-sm w-20"
+                    className={`border rounded p-2 ${
+                      p.sweet_type === "fixed" ? "w-full" : "w-20"
+                    }`}
                     value={sel.count}
                     onChange={(e) =>
                       handleChange(p.id, "count", Number(e.target.value))
@@ -200,34 +208,20 @@ export default function ShopPage() {
                   </select>
                 </div>
 
-                <p className="text-gray-700 font-medium mt-3">
+                <p className="mt-3 font-medium">
                   Total: ₹{total.toLocaleString()}
                 </p>
 
                 <button
-                  disabled={!p.in_stock && !p.coming_soon}
-                  onClick={() => p.in_stock && !p.coming_soon && handleAdd(p)}
-                  className={`py-2 mt-4 rounded w-full transition-all duration-300
-    ${p.in_stock
-                      ? addedItem === p.id
-                        ? "bg-green-700 text-white scale-105"
-                        : "bg-green-600 text-white hover:bg-green-700"
-                      : p.coming_soon
-                        ? "bg-yellow-400 text-yellow-900"
-                        : "bg-gray-300 text-gray-600"
-                    }
-  `}
+                  onClick={() => handleAdd(p)}
+                  className={`w-full py-2 mt-4 rounded transition ${
+                    addedItem === p.id
+                      ? "bg-green-700 text-white"
+                      : "bg-green-600 text-white hover:bg-green-700"
+                  }`}
                 >
-                  {p.in_stock
-                    ? addedItem === p.id
-                      ? "Added ✓"
-                      : "Add to Cart"
-                    : p.coming_soon
-                      ? "Coming Soon"
-                      : "Out of Stock"}
+                  {addedItem === p.id ? "Added ✓" : "Add to Cart"}
                 </button>
-
-
               </div>
             );
           })}
