@@ -14,19 +14,19 @@ export default function CartPage() {
     setCart(saved);
   }, []);
 
-  // total product amount
+  // ---------------- TOTAL AMOUNT ----------------
   const totalAmount = cart.reduce(
     (sum, item) => sum + Number(item.total || 0),
     0
   );
 
-  // convert sizes to liters
+  // ---------------- OILS: SIZE → LITERS ----------------
   const parseSizeToLiters = (sizeStr) => {
     if (!sizeStr) return 0;
     const s = sizeStr.trim().toLowerCase();
     if (s.includes("ml")) return parseFloat(s) / 1000;
     if (s.includes("l")) return parseFloat(s);
-    return parseFloat(s) || 0;
+    return 0;
   };
 
   const totalLiters = cart.reduce(
@@ -34,7 +34,27 @@ export default function CartPage() {
     0
   );
 
-  // helper: check pincode is in 50 rs zone
+  // ---------------- ARISELU: SIZE → KG ----------------
+  const parseSizeToKg = (sizeStr) => {
+    if (!sizeStr) return 0;
+    const s = sizeStr.toLowerCase();
+    if (s.includes("kg")) return parseFloat(s);
+    if (s.includes("g")) return parseFloat(s) / 1000;
+    return 0;
+  };
+
+  const totalKg = cart.reduce(
+    (sum, item) => sum + parseSizeToKg(item.size) * item.qty,
+    0
+  );
+
+  // ---------------- POOTHAREKULU: BOX COUNT ----------------
+  const totalBoxes = cart.reduce(
+    (sum, item) => sum + (item.size === "box" ? item.qty : 0),
+    0
+  );
+
+  // ---------------- PINCODE ₹50 ZONE ----------------
   const is50RsZone = async (pincode) => {
     const { data } = await supabase
       .from("delivery_pincodes")
@@ -45,7 +65,7 @@ export default function CartPage() {
     return data?.in_50_rs_zone === true;
   };
 
-  // WhatsApp sender
+  // ---------------- WHATSAPP ----------------
   const sendWhatsApp = (number, msg) => {
     window.open(
       `https://wa.me/${number}?text=${encodeURIComponent(msg)}`,
@@ -53,7 +73,7 @@ export default function CartPage() {
     );
   };
 
-  // main order handler
+  // ---------------- ORDER HANDLER ----------------
   const handleWhatsAppOrder = async (user) => {
     if (!user || !user.pincode) {
       alert("Please enter a valid pincode.");
@@ -66,11 +86,29 @@ export default function CartPage() {
       let shippingText = "Will be added";
       let shippingCharge = 0;
 
-      // FREE SHIPPING ≥ 5L
-      if (totalLiters >= 3) {
+      // ---------- FREE SHIPPING RULES ----------
+
+      // Oils → FREE ≥ 3L (NO CHANGE)
+      const in50Zone = await is50RsZone(user.pincode.trim());
+      if (totalLiters >= 3 && in50Zone) {
         shippingText = "Free";
         shippingCharge = 0;
-      } else {
+      }
+
+      // Pootharekulu → FREE ≥ 5 boxes
+      else if (totalBoxes >= 5 && in50Zone) {
+        shippingText = "Free";
+        shippingCharge = 0;
+      }
+
+      // Ariselu → FREE ≥ 3kg
+      else if (totalKg >= 2 && in50Zone) {
+        shippingText = "Free";
+        shippingCharge = 0;
+      }
+
+      // Otherwise ₹50 zone check
+      else {
         const in50Zone = await is50RsZone(user.pincode.trim());
         if (in50Zone) {
           shippingText = "₹50";
@@ -102,8 +140,10 @@ Order Details:
 ${orderList}
 
 Total: ₹${totalAmount}
-Shipping (based on location): ${shippingText}
-Grand Total: ₹${grandTotal}${shippingText === "Will be added" ? " (+Shipping)" : ""}
+Shipping: ${shippingText}
+Grand Total: ₹${grandTotal}${
+        shippingText === "Will be added" ? " (+Shipping)" : ""
+      }
 ------------------------------
       `.trim();
 
@@ -166,9 +206,14 @@ Grand Total: ₹${grandTotal}${shippingText === "Will be added" ? " (+Shipping)"
             <p className="text-xl font-bold text-green-700">
               Total: ₹{totalAmount.toLocaleString()}
             </p>
+
             <p className="text-gray-600 text-sm">
-              {totalLiters >= 5
-                ? "Free shipping on orders of 5L or more"
+              {totalLiters >= 3
+                ? "Free shipping on oil orders (3L+)"
+                : totalBoxes >= 5
+                ? "Free shipping on Pootharekulu (5 boxes+)"
+                : totalKg >= 3
+                ? "Free shipping on Ariselu (3kg+)"
                 : "Shipping will be calculated based on your pincode"}
             </p>
 
@@ -200,6 +245,6 @@ Grand Total: ₹${grandTotal}${shippingText === "Will be added" ? " (+Shipping)"
         onClose={() => setShowPopup(false)}
         onSubmit={handleWhatsAppOrder}
       />
-    </div>
+    </div> 
   );
 }

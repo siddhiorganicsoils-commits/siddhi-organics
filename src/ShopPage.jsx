@@ -49,19 +49,13 @@ export default function ShopPage() {
 
     setProducts(withImages);
 
-    // ---- DEFAULT SELECTIONS ----
     const defaults = {};
     withImages.forEach((p) => {
-      // Pootharekulu
       if (p.sweet_type === "fixed") {
         defaults[p.id] = { count: 1 };
-      }
-      // Ariselu
-      else if (p.sweet_type === "weight") {
+      } else if (p.sweet_type === "weight") {
         defaults[p.id] = { size: "500g", count: 1 };
-      }
-      // Oils
-      else {
+      } else {
         defaults[p.id] = { size: "1L", count: 1 };
       }
     });
@@ -84,7 +78,6 @@ export default function ShopPage() {
     const sel = selected[product.id];
     if (!sel) return 0;
 
-    // Pootharekulu → fixed price per box
     if (product.sweet_type === "fixed") {
       return product.base_price * sel.count;
     }
@@ -99,6 +92,8 @@ export default function ShopPage() {
   };
 
   const handleAdd = (product) => {
+    if (!product.in_stock || product.coming_soon) return;
+
     const sel = selected[product.id];
     const total = getTotalFor(product);
 
@@ -162,7 +157,6 @@ export default function ShopPage() {
                 <h2 className="text-lg font-semibold">{p.name}</h2>
                 <p className="text-sm text-gray-500 mt-1">{p.short_desc}</p>
 
-                {/* PRICE */}
                 <p className="text-green-700 font-medium mt-3">
                   {p.sweet_type === "fixed"
                     ? `₹${p.base_price} / box`
@@ -175,9 +169,7 @@ export default function ShopPage() {
                     : `₹${p.base_price} / 1L`}
                 </p>
 
-                {/* CONTROLS */}
                 <div className="flex gap-2 mt-4">
-                  {/* Size dropdown (NOT for pootharekulu) */}
                   {p.sweet_type !== "fixed" && sizeOptions.length > 0 && (
                     <select
                       className="border rounded p-2 flex-1"
@@ -192,7 +184,6 @@ export default function ShopPage() {
                     </select>
                   )}
 
-                  {/* Quantity */}
                   <select
                     className={`border rounded p-2 ${
                       p.sweet_type === "fixed" ? "w-full" : "w-20"
@@ -213,14 +204,26 @@ export default function ShopPage() {
                 </p>
 
                 <button
+                  disabled={!p.in_stock && !p.coming_soon}
                   onClick={() => handleAdd(p)}
-                  className={`w-full py-2 mt-4 rounded transition ${
-                    addedItem === p.id
-                      ? "bg-green-700 text-white"
-                      : "bg-green-600 text-white hover:bg-green-700"
-                  }`}
+                  className={`w-full py-2 mt-4 rounded transition-all duration-300
+                    ${
+                      p.in_stock
+                        ? addedItem === p.id
+                          ? "bg-green-700 text-white"
+                          : "bg-green-600 text-white hover:bg-green-700"
+                        : p.coming_soon
+                        ? "bg-yellow-400 text-yellow-900 cursor-not-allowed"
+                        : "bg-gray-300 text-gray-600 cursor-not-allowed"
+                    }`}
                 >
-                  {addedItem === p.id ? "Added ✓" : "Add to Cart"}
+                  {p.in_stock
+                    ? addedItem === p.id
+                      ? "Added ✓"
+                      : "Add to Cart"
+                    : p.coming_soon
+                    ? "Coming Soon"
+                    : "Out of Stock"}
                 </button>
               </div>
             );
