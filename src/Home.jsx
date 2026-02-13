@@ -1,7 +1,7 @@
 // src/Home.jsx
 import React, { useEffect } from "react";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Footer from "./components/Footer";
 
 const imgBase =
@@ -14,16 +14,64 @@ const coconutImg = imgBase + "coconut.jpg";
 const sunflowerImg = imgBase + "sunflower.jpg";
 const groundnutImg = imgBase + "groundnut.jpg";
 const bgOil = imgBase + "kuridi.jpg";
-const heroimage = imgBase + "heroimage.png"
-const sesameImg = imgBase + "sesame.jpg"
+const heroimage = imgBase + "heroimage.png";
+const sesameImg = imgBase + "sesame.jpg";
+
+// Category images
+const honeyImg = imgBase + "honey.jpg";
+const gheeImg = imgBase + "ghee.jpg";
+const oilsCatImg = imgBase + "oils.jpg";
+const sweetsImg = imgBase + "sweets.jpg";
+const picklesImg = imgBase + "pickles.jpg";
+const poduluImg = imgBase + "podulu.jpg";
+// const newLaunchImg = imgBase + "new-launch.jpg";
 
 export default function Home() {
+  const navigate = useNavigate();
 
   useEffect(() => {
     window.scrollTo(0, 0);
-  })
+  }, []);
+
   return (
     <div className="font-sans text-gray-800 overflow-hidden">
+
+      {/* PRODUCT CATEGORIES */}
+      <section className="py-12 px-6 md:px-20 bg-gray-50">
+        <h2 className="text-3xl text-center font-bold text-green-700 mb-10">
+          A Siddhi's Promise of purity.
+        </h2>
+
+        <div className="max-w-6xl mx-auto">
+          <div className="flex flex-wrap justify-center gap-8">
+            {[
+              // { name: "Honey", img: honeyImg, slug: "honey" },
+              { name: "Ghee", img: gheeImg, slug: "ghee" },
+              { name: "Oils", img: oilsCatImg, slug: "oils" },
+              { name: "Sweets & Snacks", img: sweetsImg, slug: "sweets" },
+              { name: "Pickles", img: picklesImg, slug: "pickles" },
+              { name: "Podulu", img:poduluImg, slug:"podulu" },
+            ].map((cat) => (
+              <motion.div
+                key={cat.slug}
+                whileHover={{ scale: 1.05, y: -3 }}
+                className="flex flex-col items-center text-center cursor-pointer"
+                onClick={() => navigate(`/shop/${cat.slug}`)}
+              >
+                <img
+                  src={cat.img}
+                  alt={cat.name}
+                  className="w-24 h-24 object-cover rounded-full shadow-md mb-2"
+                />
+                <p className="text-sm font-medium text-gray-800">
+                  {cat.name}
+                </p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
 
       {/* HERO SECTION */}
       <section
@@ -32,17 +80,6 @@ export default function Home() {
           backgroundImage: `url(${heroimage})`,
         }}
       >
-        {/* TOP-LEFT BUTTON */}
-        <div className="absolute top-6 left-6 z-50">
-          <Link
-            to="/shop"
-            className="text-white text-lg underline underline-offset-4 hover:text-gray-200 transition"
-          >
-            View Products
-          </Link>
-        </div>
-
-        {/* HERO TEXT */}
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
@@ -64,7 +101,6 @@ export default function Home() {
         </motion.div>
       </section>
 
-
       {/* ABOUT SECTION */}
       <section className="py-20 px-6 md:px-20 bg-white text-center">
         <motion.h2
@@ -83,7 +119,9 @@ export default function Home() {
           className="max-w-3xl mx-auto text-gray-600 text-lg leading-relaxed"
         >
           Every bottle of Siddhi Organics oil is slow-crafted using traditional
-          <span className="font-semibold text-green-700"> wooden cold-press </span>
+          <span className="font-semibold text-green-700">
+            {" "}wooden cold-press{" "}
+          </span>
           methods, retaining natural nutrients and flavor. From responsibly
           sourced seeds to sustainable packaging — we bring purity, straight
           from nature.
@@ -149,7 +187,9 @@ export default function Home() {
           className="absolute inset-0 w-full h-full object-cover opacity-20"
         />
         <div className="relative z-10">
-          <h2 className="text-4xl font-bold mb-4">Start Your Healthy Journey</h2>
+          <h2 className="text-4xl font-bold mb-4">
+            Start Your Healthy Journey
+          </h2>
           <p className="text-lg mb-8">
             Switch to pure, wooden cold-pressed oils from Siddhi Organics today.
           </p>
@@ -169,7 +209,8 @@ export default function Home() {
         </h2>
 
         <p className="text-center text-gray-600 max-w-2xl mx-auto mb-2">
-          Plot-no 3-100/611, Shop Number 1, Jayabheri Park, Kompally,<br />
+          Plot-no 3-100/611, Shop Number 1, Jayabheri Park, Kompally,
+          <br />
           Medchal–Malkajgiri District, Telangana – 500014.
         </p>
 
@@ -193,12 +234,8 @@ export default function Home() {
             loading="lazy"
             referrerPolicy="no-referrer-when-downgrade"
           ></iframe>
-
         </div>
       </section>
-
-
-
 
       {/* FOOTER */}
       <Footer />

@@ -41,6 +41,7 @@ export default function App() {
             <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/shop" element={<ShopPage />} />
+                <Route path="/shop/:category" element={<ShopPage />} />
                 <Route path="/admin-login" element={<AdminLogin />} />
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/admin/dashboard" element={<Dashboard />} />
